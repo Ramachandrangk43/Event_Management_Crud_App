@@ -39,14 +39,14 @@ A modern full-stack Event Management application built with Django REST Framewor
 
 ### 1. Clone the Repository
 
-\`\`\`bash
+bash
 git clone <repository-url>
 cd event-management
-\`\`\`
+
 
 ### 2. Backend Setup
 
-\`\`\`bash
+bash
 # Navigate to backend directory
 cd backend
 
@@ -54,7 +54,7 @@ cd backend
 python -m venv venv
 
 # Activate virtual environment
-# On Windows PowerShell (if you get execution policy error, run: Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser):
+# On Windows PowerShell 
 venv\Scripts\Activate.ps1
 # On Windows Command Prompt:
 venv\Scripts\activate.bat
@@ -235,36 +235,77 @@ The system comes with pre-configured categories:
 - Workshop  
 - Seminar
 - Webinar
-- Meetup
-- Hackathon
 - Training
-- Networking
 
-## 🧪 Testing
+## 🚀 Production Deployment
 
-### Backend Tests
-\`\`\`bash
-cd backend
-python manage.py test
-\`\`\`
+### Frontend (Vercel)
+The frontend is optimized for deployment on Vercel with the following features:
+- **Automatic deployments** from GitHub
+- **Environment variable management**
+- **Built-in CDN and caching**
+- **SSL certificates**
+- **Performance monitoring**
 
-### Frontend Tests
-\`\`\`bash
+#### Quick Deploy to Vercel
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/event-management)
+
+#### Manual Deployment
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy to Vercel
 cd frontend
-npm test
-\`\`\`
+vercel
 
-## 🚀 Deployment
+# Set environment variables
+vercel env add NEXT_PUBLIC_API_URL production
+# Enter: https://your-api-domain.com/api
 
-### Backend Deployment
-1. Set `DEBUG=False` in production
-2. Configure production database
-3. Set up static file serving
-4. Use a production WSGI server like Gunicorn
+# Deploy to production
+vercel --prod
+```
 
-### Frontend Deployment
-1. Build the application: `npm run build`
-2. Deploy to platforms like Vercel, Netlify, or your preferred hosting service
+### Backend (Django)
+Deploy the Django backend to platforms like:
+- **Railway** (recommended for Django)
+- **Heroku**
+- **DigitalOcean App Platform**
+- **AWS Elastic Beanstalk**
+
+#### Environment Variables for Production
+```bash
+# Frontend (.env.local)
+NEXT_PUBLIC_API_URL=https://your-api-domain.com/api
+
+# Backend
+DEBUG=False
+ALLOWED_HOSTS=your-api-domain.com
+DATABASE_URL=postgresql://...
+SECRET_KEY=your-secret-key
+```
+
+## 🔧 Production Features
+
+### Performance Optimizations
+- **Code splitting** and lazy loading
+- **Image optimization** with Next.js Image component
+- **Bundle analysis** and size optimization
+- **Caching strategies** for API calls
+- **Error boundaries** for graceful error handling
+
+### Security Features
+- **CORS configuration** for cross-origin requests
+- **Environment variable protection**
+- **Input validation** on both client and server
+- **HTTPS enforcement**
+
+### Monitoring & Analytics
+- **Error tracking** with detailed logging
+- **Performance monitoring** with Web Vitals
+- **API health checks**
+- **Toast notifications** for user feedback
 
 ## 📁 Project Structure
 
