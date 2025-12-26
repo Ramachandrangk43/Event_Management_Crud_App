@@ -72,11 +72,10 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
             </span>
           </div>
           <div className="absolute top-3 right-3">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              isUpcoming() 
-                ? 'bg-emerald-100 text-emerald-800' 
-                : 'bg-slate-100 text-slate-600'
-            }`}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isUpcoming()
+              ? 'bg-emerald-100 text-emerald-800'
+              : 'bg-slate-100 text-slate-600'
+              }`}>
               {isUpcoming() ? 'Upcoming' : 'Past'}
             </span>
           </div>
@@ -88,11 +87,10 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
         {/* Status Badges - Only show if no image */}
         {!event.image && (
           <div className="flex items-center space-x-2 mb-3">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              isUpcoming() 
-                ? 'bg-emerald-100 text-emerald-800' 
-                : 'bg-slate-100 text-slate-600'
-            }`}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isUpcoming()
+              ? 'bg-emerald-100 text-emerald-800'
+              : 'bg-slate-100 text-slate-600'
+              }`}>
               {isUpcoming() ? 'Upcoming' : 'Past'}
             </span>
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(event.category_name)}`}>
