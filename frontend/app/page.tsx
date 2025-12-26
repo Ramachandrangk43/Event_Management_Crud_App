@@ -1,26 +1,45 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import useSWR from 'swr'
-import { eventApi, categoryApi, Event, Category } from '@/lib/api'
+import { eventApi, categoryApi, Event, Category } from '../lib/api'
 import EventCard from '../components/EventCard'
+import { LoadingSkeleton } from '../components/LoadingSpinner'
+import { useToast } from '../components/Toast'
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
-  const { data: events, error, mutate } = useSWR<Event[]>(
+  const { showToast } = useToast()
+  
+  const { data: events, error, mutate, isLoading } = useSWR<Event[]>(
     ['events', searchTerm, selectedCategory],
-    () => eventApi.getEvents(searchTerm || undefined, selectedCategory || undefined)
+    () => eventApi.getEvents(searchTerm || undefined, selectedCategory || undefined),
+    {
+      revalidateOnFocus: false,
+      errorRetryCount: 3,
+      errorRetryInterval: 1000,
+    }
   )
-  const { data: categories } = useSWR<Category[]>('categories', categoryApi.getCategories)
+  
+  const { data: categories } = useSWR<Category[]>(
+    'categories', 
+    categoryApi.getCategories,
+    {
+      revalidateOnFocus: false,
+      errorRetryCount: 3,
+    }
+  )
 
   const handleDelete = async (id: string) => {
     try {
       await eventApi.deleteEvent(id)
       mutate() // Refresh the list
+      showToast('Event deleted successfully', 'success')
     } catch (error) {
-      alert('Failed to delete event. Please try again.')
+      console.error('Delete error:', error)
+      showToast('Failed to delete event. Please try again.', 'error')
     }
   }
 
@@ -53,7 +72,9 @@ export default function HomePage() {
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-slate-900 mb-2">Failed to load events</h3>
-          <p className="text-slate-600 mb-4">Please check your connection and try again.</p>
+          <p className="text-slate-600 mb-4">
+            {error.message || 'Please check your connection and try again.'}
+          </p>
           <button
             onClick={() => mutate()}
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition-colors duration-200"
@@ -67,6 +88,25 @@ export default function HomePage() {
 
   return (
     <div>
+      {/* Demo Mode Banner */}
+      {process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_API_URL && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong>Demo Mode:</strong> This is a demonstration version with sample data. 
+                To connect to a real backend, set the <code>NEXT_PUBLIC_API_URL</code> environment variable.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">
@@ -112,10 +152,11 @@ export default function HomePage() {
                     setSelectedCategory('')
                     mutate()
                   }}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${!selectedCategory
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    !selectedCategory
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
                 >
                   All Events
                 </button>
@@ -126,16 +167,17 @@ export default function HomePage() {
                       setSelectedCategory(category.id)
                       mutate()
                     }}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all duration-200 ${selectedCategory === category.id
-                      ? getCategoryColor(category.name).replace('bg-', 'bg-').replace('100', '200') + ' shadow-md'
-                      : getCategoryColor(category.name) + ' hover:shadow-md'
-                      }`}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all duration-200 ${
+                      selectedCategory === category.id
+                        ? getCategoryColor(category.name).replace('bg-', 'bg-').replace('100', '200') + ' shadow-md'
+                        : getCategoryColor(category.name) + ' hover:shadow-md'
+                    }`}
                   >
                     {category.name}
                   </button>
                 ))}
               </div>
-
+              
               {/* Clear Filters Button */}
               {(searchTerm || selectedCategory) && (
                 <button
@@ -158,19 +200,9 @@ export default function HomePage() {
       </div>
 
       {/* Events Grid */}
-      {!events ? (
-        <div className="text-center py-16">
-          <div className="max-w-sm mx-auto">
-            {/* Loading Skeleton */}
-            <div className="animate-pulse">
-              <div className="w-16 h-16 bg-slate-200 rounded-full mx-auto mb-4"></div>
-              <div className="h-4 bg-slate-200 rounded-lg mb-2"></div>
-              <div className="h-4 bg-slate-200 rounded-lg w-3/4 mx-auto"></div>
-            </div>
-            <p className="mt-6 text-slate-600">Loading your events...</p>
-          </div>
-        </div>
-      ) : events.length === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton />
+      ) : !events || events.length === 0 ? (
         <div className="text-center py-16">
           <div className="max-w-md mx-auto">
             <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -183,7 +215,7 @@ export default function HomePage() {
             </h3>
             <p className="text-slate-600 mb-8">
               {searchTerm || selectedCategory
-                ? 'Try adjusting your search terms or filters, or create a new event.'
+                ? 'Try adjusting your search terms or filters, or create a new event.' 
                 : 'Get started by creating your first event and bring your ideas to life.'
               }
             </p>
