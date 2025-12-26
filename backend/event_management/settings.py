@@ -1,4 +1,5 @@
 import os
+import dj_database_url
 from pathlib import Path
 from decouple import config
 
@@ -8,7 +9,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com', '.vercel.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -54,15 +55,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'event_management.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': config('DB_NAME', default=BASE_DIR / 'db.sqlite3'),
-        'USER': config('DB_USER', default=''),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default=''),
-        'PORT': config('DB_PORT', default=''),
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
+    )
 }
+
+# DATABASES = {
+#     'default': dj_database_url.parse(
+#         os.environ.get("DATABASE_URL"),
+#         conn_max_age=600,
+#         ssl_require=True
+#     )
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -85,6 +89,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -101,8 +106,29 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
+    "https://event-management-crud-app.vercel.app",
+    "https://*.vercel.app",
 ]
 
+# Allow all origins in development only
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS.extend([
+        config('FRONTEND_URL', default='https://event-management-crud-app.vercel.app')
+    ])
+
 CORS_ALLOW_CREDENTIALS = True
+
+# Additional CORS headers for better compatibility
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
