@@ -16,8 +16,12 @@ if DATABASE_URL:
         'default': dj_database_url.parse(DATABASE_URL)
     }
 
-# Static files
+# Static files with Whitenoise
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Add whitenoise to middleware
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # CORS settings for production
 CORS_ALLOWED_ORIGINS = [
